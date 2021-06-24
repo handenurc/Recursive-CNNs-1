@@ -7,6 +7,8 @@ import tensorflow as tf
 
 import utils.utils as utils
 
+tf.compat.v1.disable_eager_execution()
+
 
 # First we load data in the ram
 def argsProcessor():
@@ -24,7 +26,7 @@ GT_DIR = inputDataDir + "/gt.csv"
 VALIDATION_PERCENTAGE = .2
 TEST_PERCENTAGE = .01
 Debug = True
-config = tf.ConfigProto()
+config = tf.compat.v1.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.3
 size = (32, 32)
 
@@ -55,18 +57,18 @@ CHECKPOINT_DIR = "../4PointAllBg"
 if (not os.path.isdir(CHECKPOINT_DIR)):
     os.mkdir(CHECKPOINT_DIR)
 Debug = True
-config = tf.ConfigProto()
+config = tf.compat.v1.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.3
 
 rand_list = np.random.randint(0, len(validate_image) - 1, 10)
 batch = validate_image[rand_list]
 gt = validate_gt[rand_list]
 
-sess = tf.InteractiveSession(config=config)
+sess = tf.compat.v1.InteractiveSession(config=config)
 
 
 def weight_variable(shape, name="temp"):
-    initial = tf.truncated_normal(shape, stddev=0.1, name=name)
+    initial = tf.compat.v1.truncated_normal(shape, stddev=0.1, name=name)
     return tf.Variable(initial)
 
 
@@ -85,12 +87,12 @@ def max_pool_2x2(x):
 
 
 with tf.name_scope("Input"):
-    x = tf.placeholder(tf.float32, shape=[None, 32, 32, 3])
+    x = tf.compat.v1.placeholder(tf.float32, shape=[None, 32, 32, 3])
 
     x_ = tf.image.random_brightness(x, 5)
     x_ = tf.image.random_contrast(x_, lower=0.2, upper=1.8)
 with tf.name_scope("gt"):
-    y_ = tf.placeholder(tf.float32, shape=[None, 8])
+    y_ = tf.compat.v1.placeholder(tf.float32, shape=[None, 16])
 
 with tf.name_scope("Conv1"):
     W_conv1 = weight_variable([5, 5, 3, 20], name="W_conv1")
@@ -142,7 +144,7 @@ with tf.name_scope("FCLayers"):
     h_pool4_flat = tf.reshape(h_pool5, [-1, temp_size])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool4_flat, W_fc1) + b_fc1)
 
-    keep_prob = tf.placeholder(tf.float32)
+    keep_prob = tf.compat.v1.placeholder(tf.float32)
     h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
     W_fc2 = weight_variable([500, 500], name="W_fc2")
@@ -150,24 +152,24 @@ with tf.name_scope("FCLayers"):
 
     y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
-    W_fc3 = weight_variable([500, 8], name="W_fc3")
-    b_fc3 = bias_variable([8], name="b_fc3")
+    W_fc3 = weight_variable([500, 16], name="W_fc3")
+    b_fc3 = bias_variable([16], name="b_fc3")
 
     y_conv = tf.matmul(y_conv, W_fc3) + b_fc3
 
 with tf.name_scope("loss"):
     cross_entropy = tf.nn.l2_loss(y_conv - y_)
 
-    mySum = tf.summary.scalar('Train_loss', cross_entropy)
-    validate_loss = tf.summary.scalar('Validate_loss', cross_entropy)
+    mySum = tf.compat.v1.summary.scalar('Train_loss', cross_entropy)
+    validate_loss = tf.compat.v1.summary.scalar('Validate_loss', cross_entropy)
 with tf.name_scope("Train"):
-    train_step = tf.train.AdamOptimizer(1e-3).minimize(cross_entropy)
+    train_step = tf.compat.v1.train.AdagradOptimizer(1e-3).minimize(cross_entropy)
 
-merged = tf.summary.merge_all()
+merged = tf.compat.v1.summary.merge_all()
 
-train_writer = tf.summary.FileWriter('../train', sess.graph)
+train_writer = tf.compat.v1.summary.FileWriter('../train', sess.graph)
 
-saver = tf.train.Saver()
+saver = tf.compat.v1.train.Saver()
 ckpt = tf.train.get_checkpoint_state(CHECKPOINT_DIR)
 if ckpt and ckpt.model_checkpoint_path:
     print("PRINTING CHECKPOINT PATH")
@@ -176,7 +178,7 @@ if ckpt and ckpt.model_checkpoint_path:
 
 else:
     print("Starting from scratch")
-    init = tf.global_variables_initializer()
+    init = tf.compat.v1.global_variables_initializer()
     sess.run(init)
 
 for i in range(NO_OF_STEPS):
@@ -224,6 +226,18 @@ for i in range(NO_OF_STEPS):
 
         cv2.circle(batch[0], (response[0][6], response[0][7]), 2, (255, 255, 0), 2)
         cv2.circle(batch[0], (gt[0][6], gt[0][7]), 2, (0, 255, 255), 2)
+
+        cv2.circle(batch[0], (response[0][8], response[0][9]), 2, (255, 0, 0), 2)
+        cv2.circle(batch[0], (gt[0][8], gt[0][9]), 2, (0, 255, 255), 2)
+
+        cv2.circle(batch[0], (response[0][10], response[0][11]), 2, (0, 255, 0), 2)
+        cv2.circle(batch[0], (gt[0][10], gt[0][11]), 2, (0, 255, 255), 2)
+
+        cv2.circle(batch[0], (response[0][12], response[0][13]), 2, (0, 0, 255), 2)
+        cv2.circle(batch[0], (gt[0][12], gt[0][13]), 2, (0, 255, 255), 2)
+
+        cv2.circle(batch[0], (response[0][14], response[0][15]), 2, (255, 255, 0), 2)
+        cv2.circle(batch[0], (gt[0][14], gt[0][15]), 2, (0, 255, 255), 2)
 
         img = batch[0]
         img = cv2.resize(img, (320, 320))

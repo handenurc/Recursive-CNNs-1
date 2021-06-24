@@ -11,7 +11,7 @@ result =np.copy(img)
 corner_e = getcorners.get_corners_aug()
 start = time.clock()
 data  =corner_e.get(img)
-print time.clock() - start
+print (time.clock() - start)
 
 tf.reset_default_graph()
 
@@ -29,13 +29,13 @@ for b in data:
     temp[0]+= b[1]
     temp[1]+= b[2]
     corner_address.append(temp)
-    print temp
+    print (temp)
     counter+=1
 
 
 
 end = time.clock()
-print "TOTAL TIME : ", end - start
+print ("TOTAL TIME : ", end - start)
 for a in range(0,len(data)):
     cv2.line(img, tuple(corner_address[a%4]), tuple(corner_address[(a+1)%4]),(255,0,0),2)
 

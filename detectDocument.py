@@ -1,6 +1,7 @@
 import tensorflow as tf
 import cv2
 import numpy as np
+from dummy_perspective import perspective_transform
 
 
 def argsProcessor():
@@ -8,6 +9,7 @@ def argsProcessor():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--imagePath", help="Path to the document image")
     parser.add_argument("-o", "--outputPath", help="Path to store the result")
+    parser.add_argument("-o1", "--outputPath1", help="Path to store the result1")
     parser.add_argument("-rf", "--retainFactor", help="Floating point in range (0,1) specifying retain factor",
                         default="0.85")
     parser.add_argument("-cm", "--cornerModel", help="Model for corner point refinement",
@@ -20,8 +22,8 @@ def argsProcessor():
 def load_graph(frozen_graph_filename, inputName, outputName):
     # We load the protobuf file from the disk and parse it to retrieve the
     # unserialized graph_def
-    with tf.gfile.GFile(frozen_graph_filename, "rb") as f:
-        graph_def = tf.GraphDef()
+    with tf.io.gfile.GFile(frozen_graph_filename, "rb") as f:
+        graph_def = tf.compat.v1.GraphDef()
         graph_def.ParseFromString(f.read())
     # Then, we can use again a convenient built-in function to import a graph_def into the
     # current default Graph
@@ -118,8 +120,8 @@ if __name__ == "__main__":
     graph, x, y = load_graph(args.cornerModel, "Corner/inputTensor", "Corner/outputTensor")
     graphCorners, xCorners, yCorners = load_graph(args.documentModel, "Input/inputTensor", "FCLayers/outputTensor")
     img = cv2.imread(args.imagePath)
-    sess = tf.Session(graph=graph)
-    sessCorners = tf.Session(graph=graphCorners)
+    sess = tf.compat.v1.Session(graph=graph)
+    sessCorners = tf.compat.v1.Session(graph=graphCorners)
     result = np.copy(img)
     data = getCorners(img, sessCorners, xCorners, yCorners)
     corner_address = []
@@ -134,4 +136,11 @@ if __name__ == "__main__":
         counter += 1
     for a in range(0,len(data)):
         cv2.line(img, tuple(corner_address[a % 4]), tuple(corner_address[(a+1) % 4]), (255, 0, 0), 2)
-    cv2.imwrite(args.outputPath, img)
+    # @Handenur Caliskan added----------------------------------------------------------------------
+    new_corner_address = [corner_address[0], corner_address[1], corner_address[3], corner_address[2]]
+    transformed_image = perspective_transform(img, new_corner_address)
+    # ----------------------------------------------------------------------------------------------
+    cv2.imwrite(args.outputPath, transformed_image)
+    cv2.imwrite(args.outputPath1, img)
+
+    

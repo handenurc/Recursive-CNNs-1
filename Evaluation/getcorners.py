@@ -264,14 +264,14 @@ class get_corners_singlefc:
         h_conv5 = tf.nn.relu(conv2d(h_pool4, W_conv5) + b_conv5)
         h_pool5 = max_pool_2x2(h_conv5)
 
-        print h_pool3.get_shape()
+        print (h_pool3.get_shape())
 
         temp_size = h_pool5.get_shape()
         temp_size = temp_size[1] * temp_size[2] * temp_size[3]
         temp_size = int(temp_size)
         # In[ ]:
 
-        print temp_size
+        print(temp_size)
         W_fc1 = weight_variable([int(temp_size), 500], name="W_fc1")
         b_fc1 = bias_variable([500], name="b_fc1")
 
@@ -468,14 +468,14 @@ class get_corners_alex:
 
 
 
-        print h_pool5.get_shape()
+        print(h_pool5.get_shape())
 
         temp_size = h_pool5.get_shape()
         temp_size = temp_size[1] * temp_size[2] * temp_size[3]
         temp_size = int(temp_size)
         # In[ ]:
 
-        print temp_size
+        print(temp_size)
         W_fc1 = weight_variable([int(temp_size), 500], name="W_fc1")
         b_fc1 = bias_variable([500], name="b_fc1")
 
@@ -695,14 +695,14 @@ class get_corners_aug:
 
 
 
-        print h_pool5.get_shape()
+        print(h_pool5.get_shape())
 
         temp_size = h_pool5.get_shape()
         temp_size = temp_size[1] * temp_size[2] * temp_size[3]
         temp_size = int(temp_size)
         # In[ ]:
 
-        print temp_size
+        print(temp_size)
         with tf.name_scope("FCLayers"):
             W_fc1 = weight_variable([int(temp_size), 500], name="W_fc1")
             b_fc1 = bias_variable([500], name="b_fc1")
@@ -926,14 +926,14 @@ class get_corners_moreBG:
 
 
 
-        print h_pool5.get_shape()
+        print(h_pool5.get_shape())
 
         temp_size = h_pool5.get_shape()
         temp_size = temp_size[1] * temp_size[2] * temp_size[3]
         temp_size = int(temp_size)
         # In[ ]:
 
-        print temp_size
+        print(temp_size)
         with tf.name_scope("FCLayers"):
             W_fc1 = weight_variable([int(temp_size), 500], name="W_fc1")
             b_fc1 = bias_variable([500], name="b_fc1")

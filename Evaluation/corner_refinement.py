@@ -66,7 +66,7 @@ class corner_finder():
             h_conv4 = tf.nn.relu(conv2d(h_pool3, W_conv4) + b_conv4)
             h_pool4 = max_pool_2x2(h_conv4)
 
-            print h_pool4.get_shape()
+            print(h_pool4.get_shape())
 
             temp_size = h_pool4.get_shape()
             temp_size = temp_size[1] * temp_size[2] * temp_size[3]
@@ -375,7 +375,7 @@ class corner_finder_aug():
             h_conv4 = tf.nn.relu(conv2d(h_pool3, W_conv4) + b_conv4)
             h_pool4 = max_pool_2x2(h_conv4)
 
-            print h_pool4.get_shape()
+            print (h_pool4.get_shape())
 
             temp_size = h_pool4.get_shape()
             temp_size = temp_size[1] * temp_size[2] * temp_size[3]

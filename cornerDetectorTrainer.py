@@ -7,6 +7,7 @@ import tensorflow as tf
 
 from utils import utils
 
+tf.compat.v1.disable_eager_execution()
 
 def argsProcessor():
     import argparse
@@ -53,14 +54,14 @@ if (not os.path.isdir(CHECKPOINT_DIR)):
 Debug = True
 size = (32, 32)
 
-config = tf.ConfigProto()
+config = tf.compat.v1.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.1
 
-sess = tf.InteractiveSession(config=config)
+sess = tf.compat.v1.InteractiveSession(config=config)
 
 
 def weight_variable(shape, name="temp"):
-    initial = tf.truncated_normal(shape, stddev=0.1, name=name)
+    initial = tf.compat.v1.truncated_normal(shape, stddev=0.1, name=name)
     return tf.Variable(initial)
 
 
@@ -81,15 +82,15 @@ def max_pool_2x2(x):
 
 
 # In[ ]:
-with tf.variable_scope('Corner'):
+with tf.compat.v1.variable_scope('Corner'):
     W_conv1 = weight_variable([5, 5, 3, 10], name="W_conv1")
     b_conv1 = bias_variable([10], name="b_conv1")
 
-    x = tf.placeholder(tf.float32, shape=[None, 32, 32, 3])
+    x = tf.compat.v1.placeholder(tf.float32, shape=[None, 32, 32, 3])
     x_ = tf.image.random_contrast(x, lower=0.2, upper=1.8)
     x_ = tf.image.random_brightness(x_, max_delta=50)
 
-    y_ = tf.placeholder(tf.float32, shape=[None, 2])
+    y_ = tf.compat.v1.placeholder(tf.float32, shape=[None, 2])
 
     h_conv1 = tf.nn.relu(conv2d(x_, W_conv1) + b_conv1)
     h_pool1 = max_pool_2x2(h_conv1)
@@ -118,7 +119,7 @@ with tf.variable_scope('Corner'):
     h_pool4_flat = tf.reshape(h_pool4, [-1, int(temp_size)])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool4_flat, W_fc1) + b_fc1)
 
-    keep_prob = tf.placeholder(tf.float32)
+    keep_prob = tf.compat.v1.placeholder(tf.float32)
     h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
     W_fc2 = weight_variable([300, 2], name="W_fc2")
@@ -128,16 +129,16 @@ with tf.variable_scope('Corner'):
 
     cross_entropy = tf.nn.l2_loss(y_conv - y_)
 
-    mySum = tf.summary.scalar('loss', cross_entropy)
-    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+    mySum = tf.compat.v1.summary.scalar('loss', cross_entropy)
+    train_step = tf.compat.v1.train.AdagradOptimizer(1e-4).minimize(cross_entropy)
     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-merged = tf.summary.merge_all()
+merged = tf.compat.v1.summary.merge_all()
 
-train_writer = tf.summary.FileWriter('../train', sess.graph)
+train_writer = tf.compat.v1.summary.FileWriter('../train', sess.graph)
 
-saver = tf.train.Saver()
+saver = tf.compat.v1.train.Saver()
 ckpt = tf.train.get_checkpoint_state(CHECKPOINT_DIR)
 if ckpt and ckpt.model_checkpoint_path:
     print("PRINTING CHECKPOINT PATH")
@@ -146,7 +147,7 @@ if ckpt and ckpt.model_checkpoint_path:
 
 else:
     print("Starting from scratch")
-    init = tf.global_variables_initializer()
+    init = tf.compat.v1.global_variables_initializer()
     sess.run(init)
 
 for i in range(NO_OF_STEPS):
