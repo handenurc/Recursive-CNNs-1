@@ -4,7 +4,7 @@ import os
 import math
 import matplotlib.pyplot as plt
 from blob_detection import blob_detector
-from hough import hough_line_detector
+# from hough import hough_line_detector
 from probabilistic_hough import probabilistic_houghline
 from rotating_without_losing_boundaries import rotate_image
 directory = "C:\\Users\\handenur.caliskan\\Desktop\\highres_double"
@@ -22,6 +22,7 @@ def crop_kimlik(img):
         cols = img.shape[0]
         rows = img.shape[1]
         copy_img = img.copy()
+        copy_img1 = img.copy()
         (cx, cy, radius) = blob_detector(img)
         fig = plt.figure("Circles detected")
         plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
@@ -85,7 +86,8 @@ def crop_kimlik(img):
             if len(groups) == 2:
                 alpha1 = max(groups[0])
                 crop_point1 = cx+(radius*10)*math.cos(math.radians(abs(60-alpha1)))
-                cropped_img1 = img[:, int(crop_point1):rows]
+                cropped_img1 = copy_img1[:, int(crop_point1):rows]
+                cropped_front = copy_img1[:, 0:int(crop_point1)]
 
                 if len(groups[1]) == 2:
                     alpha2 = max(groups[1])
@@ -117,7 +119,7 @@ def crop_kimlik(img):
                     crop_point1 = cx-(radius*4)*math.cos(math.radians(abs(60-alpha1)))
                 # if 90 <= alpha1 < 180:
                 #     crop_point = cx+(radius*8)*math.cos(math.radians(abs(180-directions[1])))
-                    cropped_img1 = img[:, 0:int(crop_point1)]
+                    cropped_img1 = copy_img1[:, 0:int(crop_point1)]
                     fig1 = plt.figure("Cropped img 1")
                     plt.imshow(cv.cvtColor(cropped_img1, cv.COLOR_BGR2RGB))
                 
@@ -125,7 +127,7 @@ def crop_kimlik(img):
             if len(groups) == 2:
                 alpha1 = max(groups[0])
                 crop_point1 = cx-(radius*4)*math.cos(math.radians(abs(60-alpha1)))
-                cropped_img1 = img[:, 0:int(crop_point1)]
+                cropped_img1 = copy_img1[:, 0:int(crop_point1)]
 
                 if len(groups[1]) == 2:
                     alpha2 = max(groups[1])
@@ -160,10 +162,10 @@ def crop_kimlik(img):
         print(cx,cy,radius)
         print(directions, xs_mean, ys_mean)
 
-        fig1 = plt.figure("Cropped img 1")
+        fig1 = plt.figure("Cropped back")
         plt.imshow(cv.cvtColor(cropped_img1, cv.COLOR_BGR2RGB))
 
-        # fig2 = plt.figure("Cropped img 2")
-        # plt.imshow(cv.cvtColor(cropped_img2, cv.COLOR_BGR2RGB))
+        fig2 = plt.figure("Cropped front")
+        plt.imshow(cv.cvtColor(cropped_front, cv.COLOR_BGR2RGB))
         plt.show()
-    return cropped_img1
+    return cropped_img1, cropped_front, crop_point1

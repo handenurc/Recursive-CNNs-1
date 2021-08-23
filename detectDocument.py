@@ -2,6 +2,9 @@ import tensorflow as tf
 import cv2
 import numpy as np
 from dummy_perspective import perspective_transform
+import matplotlib.pyplot as plt
+from Crop_kimlik import crop_kimlik
+from blob_detection import blob_detector
 
 
 def argsProcessor():
@@ -119,10 +122,18 @@ if __name__ == "__main__":
     args = argsProcessor()
     graph, x, y = load_graph(args.cornerModel, "Corner/inputTensor", "Corner/outputTensor")
     graphCorners, xCorners, yCorners = load_graph(args.documentModel, "Input/inputTensor", "FCLayers/outputTensor")
-    img = cv2.imread(args.imagePath)
+    img_before_crop = cv2.imread(args.imagePath)
     sess = tf.compat.v1.Session(graph=graph)
     sessCorners = tf.compat.v1.Session(graph=graphCorners)
-    result = np.copy(img)
+    result = np.copy(img_before_crop)
+    cols = img_before_crop.shape[0]
+    rows = img_before_crop.shape[1]
+
+    img, cropped_front, crop_point = crop_kimlik(img_before_crop)
+
+    paste_rows = rows-int(crop_point)
+    paste_cols = cols
+
     data = getCorners(img, sessCorners, xCorners, yCorners)
     corner_address = []
     counter = 0
@@ -138,9 +149,29 @@ if __name__ == "__main__":
         cv2.line(img, tuple(corner_address[a % 4]), tuple(corner_address[(a+1) % 4]), (255, 0, 0), 2)
     # @Handenur Caliskan added----------------------------------------------------------------------
     new_corner_address = [corner_address[0], corner_address[1], corner_address[3], corner_address[2]]
-    transformed_image = perspective_transform(img, new_corner_address)
+    transformed_image = perspective_transform(img, paste_rows, paste_cols, new_corner_address)
     # ----------------------------------------------------------------------------------------------
-    cv2.imwrite(args.outputPath, transformed_image)
-    cv2.imwrite(args.outputPath1, img)
+    
+    paste_back = 255* np.ones((cols,rows-int(crop_point),3),np.uint8)
+    concat_ids = cv2.hconcat([cropped_front,paste_back])
 
+    if (cropped_front.shape[1]+int(3*paste_back.shape[1]/4))-(cropped_front.shape[1]+int(paste_back.shape[1]/4))!= transformed_image.shape[1]:
+        x = transformed_image.shape[1]+(cropped_front.shape[1]+int(paste_back.shape[1]/4))
+        concat_ids[int(paste_back.shape[0]/6):int(5*paste_back.shape[0]/6), cropped_front.shape[1]+int(paste_back.shape[1]/4):x] = transformed_image
+    else:
+        concat_ids[int(paste_back.shape[0]/6):int(5*paste_back.shape[0]/6), cropped_front.shape[1]+int(paste_back.shape[1]/4):cropped_front.shape[1]+int(3*paste_back.shape[1]/4)] = transformed_image
+    
+    # fig1 = plt.figure('img')
+    # plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    # plt.show()
+    
+    fig3 = plt.figure('Final')
+    plt.imshow(cv2.cvtColor(concat_ids, cv2.COLOR_BGR2RGB))
+    
+    fig2 = plt.figure('Covered back')
+    plt.imshow(cv2.cvtColor(transformed_image, cv2.COLOR_BGR2RGB))
+
+    plt.show()
+    cv2.imwrite(args.outputPath, transformed_image)
+    cv2.imwrite(args.outputPath1, concat_ids)
     

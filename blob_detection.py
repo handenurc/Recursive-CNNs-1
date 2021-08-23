@@ -33,7 +33,7 @@ def blob_detector(img):
     closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel_for_edges)
     #----------------------------------------------------------------------------------------------
 
-    fig1 = plt.figure("Morphology Steps")
+    # fig1 = plt.figure("Morphology Steps")
 
     # plt.subplot(2, 3, 1)
     # plt.title("original image")

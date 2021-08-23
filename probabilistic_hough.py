@@ -1,4 +1,4 @@
-from hough import erode_with_ellipse
+# from hough import erode_with_ellipse
 from blob_detection import blob_detector
 import os
 import matplotlib.pyplot as plt

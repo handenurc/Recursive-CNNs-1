@@ -2,22 +2,23 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-def perspective_transform(image,corner_addresses):
+def perspective_transform(image, paste_rows, paste_cols, corner_addresses):
 
-    rows,cols,ch = image.shape
+    rows_transformed = int(paste_rows/2)
+    cols_transformed = int(2*paste_cols/3)
 
-    new_sizes = np.float32([[0,0],[300,0],[0,450],[300,450]])
+    new_sizes = np.float32([[0,0],[rows_transformed,0],[0,cols_transformed],[rows_transformed,cols_transformed]])
 
     M = cv2.getPerspectiveTransform(np.float32(np.array(corner_addresses)),new_sizes)
-    dst = cv2.warpPerspective(image,M,(300,450))
+    dst = cv2.warpPerspective(image,M,(rows_transformed,cols_transformed))
 
     # Coordinates of the rectangular area needs to be covered 
     # x1,y1 --> top left x2,y2 --> bottom right
 
-    x1 = 100
-    y1 = 20
-    x2 = 200
-    y2 = 55
+    x1 = int(rows_transformed/3)
+    y1 = 0
+    x2 = int(2*rows_transformed/3)
+    y2 = int(cols_transformed/8)
 
     points = np.array([[x1, y1], [x2, y1],  [x2, y2], [x1, y2]],
                     dtype=np.int32)
